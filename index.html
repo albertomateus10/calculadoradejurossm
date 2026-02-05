@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora de Juros • BANRICOMPRAS / REDE</title>
+
+  <!-- Fonte semelhante ao print -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      /* Tema único: CLARO (sem toggle / sem tema escuro) */
+      --bgA: #e5e7eb;
+      /* cinza claro */
+      --bgB: #f3f4f6;
+      /* cinza muito claro */
+      --paper: rgba(255, 255, 255, .92);
+      --paper2: rgba(255, 255, 255, .98);
+
+      --stroke: rgba(15, 23, 42, .12);
+      --stroke2: rgba(15, 23, 42, .08);
+
+      --text: #0f172a;
+      --muted: #5b6475;
+
+      --head: rgba(37, 99, 235, .07);
+
+      --banriA: #06b6d4;
+      /* cyan */
+      --banriB: #22c55e;
+      /* green */
+      --redeA: #3b82f6;
+      /* blue */
+      --redeB: #2563eb;
+      /* blue mais forte (sem roxo) */
+
+      --btn: rgba(15, 23, 42, .04);
+      --btnHover: rgba(15, 23, 42, .07);
+
+      --tableBg: rgba(255, 255, 255, .90);
+      --rowHover: rgba(37, 99, 235, .05);
+
+      --radius: 12px;
+      --radiusPill: 999px;
+      --shadow: 0 22px 60px rgba(16, 24, 40, .10);
+      --shadow-soft: 0 10px 26px rgba(16, 24, 40, .08);
+      --ring: 0 0 0 4px rgba(59, 130, 246, .16);
+
+      --font: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      /* Fundo elegante em tons de cinza */
+      background:
+        radial-gradient(950px 520px at 16% 12%, rgba(148, 163, 184, .12), transparent 60%),
+        radial-gradient(900px 520px at 78% 18%, rgba(203, 213, 225, .14), transparent 62%),
+        linear-gradient(180deg, var(--bgA), var(--bgB));
+    }
+
+    /* dimensionamento menor (compacto) */
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 8px 12px 12px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--paper2), var(--paper));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: radial-gradient(760px 240px at 18% 0%, rgba(59, 130, 246, .10), transparent 62%);
+      pointer-events: none;
+    }
+
+    /* HEADER CENTRALIZADO (sem logo) */
+    .top {
+      padding: 16px 20px 12px;
+      /* Mais espaçamento */
+      border-bottom: 1px solid var(--stroke2);
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      /* Maior destaque */
+      font-weight: 700;
+      /* Peso elegante */
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+
+    .hint {
+      margin: 8px auto 0;
+      max-width: 600px;
+      font-size: 14px;
+      /* Melhor legibilidade */
+      color: var(--muted);
+      line-height: 1.5;
+      font-weight: 400;
+      /* Mais leve */
+    }
+
+    .body {
+      padding: 10px 14px 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .emptyState {
+      border: 1px dashed var(--stroke);
+      background: rgba(15, 23, 42, .02);
+      border-radius: 14px;
+      padding: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    /* =========================
+       1) CAMPO DE VALOR EM CIMA (antes dos bancos)
+    ========================= */
+    .inputGrid {
+      display: grid;
+      grid-template-columns: 220px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .cellLabel {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      text-align: left;
+    }
+
+    .inputWrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 9px 10px;
+      background: rgba(15, 23, 42, .02);
+      min-height: 40px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+    }
+
+    .inputWrap:focus-within {
+      border-color: rgba(59, 130, 246, .45);
+      box-shadow: var(--ring);
+      background: rgba(59, 130, 246, .03);
+    }
+
+    .prefix {
+      font-weight: 900;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: var(--radiusPill);
+      border: 1px solid var(--stroke2);
+      background: rgba(37, 99, 235, .06);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 700;
+      /* mantém campo com destaque */
+      color: var(--text);
+      letter-spacing: .01em;
+      caret-color: transparent;
+      /* esconde o cursor piscante */
+    }
+
+    input::placeholder {
+      color: rgba(120, 130, 150, .70);
+      font-weight: 600;
+    }
+
+    .btn {
+      border: 1px solid var(--stroke);
+      background: var(--btn);
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      min-height: 40px;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: var(--btnHover);
+      border-color: rgba(59, 130, 246, .28);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0px);
+    }
+
+    /* =========================
+       2) BOTÕES DOS BANCOS (bem visíveis) ABAIXO do campo
+    ========================= */
+    .bankRow {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .modeBtn {
+      appearance: none;
+      border: 1px solid var(--stroke);
+      background: #fff;
+      padding: 10px 16px;
+      border-radius: var(--radiusPill);
+      font-weight: 1000;
+      font-size: 12.5px;
+      cursor: pointer;
+      color: var(--text);
+      transition: transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      letter-spacing: .02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .modeBtn:hover {
+      background: rgba(37, 99, 235, .05);
+      border-color: rgba(59, 130, 246, .28);
+      transform: translateY(-1px);
+    }
+
+    .modeBtn:active {
+      transform: translateY(0px);
+    }
+
+    .modeDot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .modeBtn.banri .modeDot {
+      background: linear-gradient(90deg, var(--banriA), var(--banriB));
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, .10);
+    }
+
+    .modeBtn.rede .modeDot {
+      background: linear-gradient(90deg, var(--redeA), var(--redeB));
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, .12);
+    }
+
+    .modeBtn.active {
+      border-color: rgba(59, 130, 246, .35);
+      background: rgba(37, 99, 235, .06);
+      box-shadow: 0 16px 34px rgba(37, 99, 235, .14);
+      color: #2563eb;
+      /* Azul para o texto quando selecionado */
+    }
+
+    /* Quando um banco está ativo, o outro fica cinza claro */
+    .modeBtn:not(.active) {
+      opacity: 0.5;
+      background: rgba(148, 163, 184, .08);
+      color: #94a3b8;
+    }
+
+    .modeBtn:not(.active):hover {
+      opacity: 0.7;
+      background: rgba(148, 163, 184, .12);
+      color: #64748b;
+    }
+
+    /* =========================
+       3) TABELA estilo planilha
+       - valores SEM negrito
+    ========================= */
+    .sheet {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--tableBg);
+    }
+
+    .sheet thead th {
+      background: var(--head);
+      border-bottom: 1px solid var(--stroke2);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(15, 23, 42, .76);
+      padding: 10px 8px;
+      text-align: left;
+      font-weight: 900;
+    }
+
+    /* Force centering for headers with class .center */
+    .sheet thead th.center {
+      text-align: center;
+    }
+
+    .sheet tbody td {
+      padding: 10px 8px;
+      font-size: 12.5px;
+      border-bottom: 1px solid var(--stroke2);
+      background: transparent;
+      vertical-align: middle;
+      font-weight: 400;
+      /* <<< SEM NEGRITO (Regular) */
+      color: var(--text);
+    }
+
+    .sheet tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .sheet tbody tr:hover td {
+      background: var(--rowHover);
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .mutedCell {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .money {
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    /* <<< valores sem negrito */
+
+    .mini {
+      font-size: 11.5px;
+      color: #94a3b8;
+      /* Cinza mais claro */
+      margin-top: 6px;
+      line-height: 1.45;
+      font-weight: 600;
+      text-align: center;
+      /* Centralizado */
+    }
+
+    /* Destaque 2 ultimas colunas */
+    .sheet th.highlight {
+      background: rgba(37, 99, 235, .12);
+      font-size: 13px;
+      color: var(--redeB);
+      font-weight: 900;
+    }
+
+    .sheet td.highlight {
+      background: rgba(37, 99, 235, .08);
+      font-weight: 900;
+      font-size: 15px;
+      color: #1e40af;
+    }
+
+    .sheet th.sep,
+    .sheet td.sep {
+      border-left: 2px solid rgba(37, 99, 235, .25);
+    }
+
+    @media (max-width: 760px) {
+      .inputGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .modeBtn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .cellLabel {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <!-- CABEÇALHO CENTRALIZADO (sem logo) -->
+      <div class="top">
+        <h1 class="title">Calculadora de Juros no Cartão</h1>
+        <p class="hint">
+          Digite o valor que o cliente quer passar no cartão e aperte o botão do banco desejado, todos os valores irão
+          aparecer AUTOMATICAMENTE, os valores aparecem somente após a seleção do banco <b>REDE</b> ou
+          <b>BANRICOMPRAS</b>.
+        </p>
+      </div>
+
+      <div class="body">
+        <!-- CAMPO DE VALOR EM CIMA -->
+        <div class="inputGrid">
+          <div class="cellLabel">Digite o valor no campo ao lado</div>
+
+          <div class="inputWrap">
+            <span class="prefix">R$</span>
+            <input id="baseValue" type="text" inputmode="decimal" placeholder="Ex.: 10.000,00" />
+          </div>
+
+          <button class="btn" id="btnLimpar" type="button">Limpar</button>
+        </div>
+
+        <!-- BANCOS ABAIXO DO CAMPO -->
+        <div class="bankRow" aria-label="Seleção de operadora">
+          <button class="modeBtn rede" id="btnRede" type="button" title="Selecionar REDE">
+            <span class="modeDot"></span> REDE
+          </button>
+          <button class="modeBtn banri" id="btnBanri" type="button" title="Selecionar BANRICOMPRAS">
+            <span class="modeDot"></span> BANRICOMPRAS
+          </button>
+        </div>
+
+        <!-- Estado inicial (sem escolha) -->
+        <div id="emptyState" class="emptyState">
+          Selecione <b>REDE</b> ou <b>BANRICOMPRAS</b> para exibir as taxas e o cálculo.
+        </div>
+
+        <!-- Conteúdo que só aparece depois da escolha -->
+        <div id="content" class="hidden">
+          <table class="sheet" aria-label="Tabela de taxas e cálculo">
+            <thead>
+              <tr>
+                <th style="width:34%;">Modalidade/Parcelas</th>
+                <th class="center" style="width:14%;">Taxa</th>
+                <th class="center" style="width:14%;">Fator</th>
+                <th class="center" style="width:16%;">Valor a cobrar</th>
+                <th class="center highlight sep" style="width:10%;">Parcelas</th>
+                <th class="center highlight" style="width:12%;">Parcela</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+
+          <div class="mini">
+            Desenvolvido por Alberto Mateus
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // DADOS (iguais aos da planilha)
+    // =========================
+    const BANRI = [
+      { label: "Débito", n: 1, taxa: 1.50, fator: 0.985 },
+      { label: "1x / 30 dias", n: 1, taxa: 5.80, fator: 0.942 },
+      { label: "2x", n: 2, taxa: 7.30, fator: 0.927 },
+      { label: "3x", n: 3, taxa: 8.80, fator: 0.912 },
+      { label: "4x", n: 4, taxa: 10.30, fator: 0.897 },
+    ];
+
+    const REDE = [
+      { label: "1x", n: 1, taxa: 1.55, fator: 0.985 },
+      { label: "2x", n: 2, taxa: 3.05, fator: 0.970 },
+      { label: "3x", n: 3, taxa: 4.50, fator: 0.954 },
+      { label: "4x", n: 4, taxa: 5.38, fator: 0.946 },
+      { label: "5x", n: 5, taxa: 6.15, fator: 0.939 },
+      { label: "6x", n: 6, taxa: 6.93, fator: 0.931 },
+      { label: "7x", n: 7, taxa: 7.90, fator: 0.921 },
+      { label: "8x", n: 8, taxa: 8.68, fator: 0.913 },
+      { label: "9x", n: 9, taxa: 9.45, fator: 0.906 },
+      { label: "10x", n: 10, taxa: 10.23, fator: 0.898 },
+    ];
+
+    // =========================
+    // HELPERS
+    // =========================
+    const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const pct = (v) => (v / 100).toLocaleString("pt-BR", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fator3 = (v) => v.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+    function parseBRL(str) {
+      if (!str) return 0;
+      const s = String(str).trim()
+        .replace(/\s/g, "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .replace(/[^\d.]/g, "");
+      const val = Number(s);
+      return Number.isFinite(val) ? val : 0;
+    }
+
+    function formatBRLInput(el) {
+      const v = parseBRL(el.value);
+      if (!v) {
+        el.value = "";
+        return 0;
+      }
+      el.value = v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return v;
+    }
+
+    function valorCobrar(base, fator) {
+      if (!base || !fator) return 0;
+      return base / fator; // base ÷ fator (igual planilha)
+    }
+    function parcela(total, n) {
+      if (!total || !n) return 0;
+      return total / n;
+    }
+
+    // =========================
+    // UI / ESTADO
+    // =========================
+    const btnBanri = document.getElementById("btnBanri");
+    const btnRede = document.getElementById("btnRede");
+    const emptyState = document.getElementById("emptyState");
+    const content = document.getElementById("content");
+    const tbody = document.getElementById("tbody");
+    const baseInput = document.getElementById("baseValue");
+    const btnLimpar = document.getElementById("btnLimpar");
+
+    let modo = null; // "BANRI" ou "REDE"
+
+    function setModo(next) {
+      modo = next;
+
+      btnBanri.classList.toggle("active", modo === "BANRI");
+      btnRede.classList.toggle("active", modo === "REDE");
+
+      emptyState.classList.toggle("hidden", !!modo);
+      content.classList.toggle("hidden", !modo);
+
+      render();
+    }
+
+    function currentData() {
+      return modo === "BANRI" ? BANRI : (modo === "REDE" ? REDE : []);
+    }
+
+    function render() {
+      const base = parseBRL(baseInput.value);
+      const data = currentData();
+
+      if (!modo) {
+        tbody.innerHTML = "";
+        return;
+      }
+
+      tbody.innerHTML = data.map(row => {
+        const total = base ? valorCobrar(base, row.fator) : 0;
+        const parc = base ? parcela(total, row.n) : 0;
+
+        const totalTxt = base ? brl.format(total) : "—";
+        const parcTxt = base ? brl.format(parc) : "—";
+
+        return `
+          <tr>
+            <td>${row.label}</td>
+            <td class="center mutedCell">${pct(row.taxa)}</td>
+            <td class="center mutedCell">${fator3(row.fator)}</td>
+            <td class="center"><span class="money">${totalTxt}</span></td>
+            <td class="center highlight sep">${row.n}x</td>
+            <td class="center highlight"><span class="money">${parcTxt}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // =========================
+    // EVENTOS
+    // =========================
+    btnBanri.addEventListener("click", () => setModo("BANRI"));
+    btnRede.addEventListener("click", () => setModo("REDE"));
+
+    baseInput.addEventListener("input", () => render());
+    baseInput.addEventListener("blur", () => { formatBRLInput(baseInput); render(); });
+
+    btnLimpar.addEventListener("click", () => {
+      baseInput.value = "";
+      render();
+      baseInput.focus();
+    });
+
+    // Inicial: sem escolha (taxas escondidas)
+    setModo(null);
+  </script>
+</body>
+
+</html>
